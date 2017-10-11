@@ -58,7 +58,7 @@ var QnAMakerRecognizer = (function () {
     }
     QnAMakerRecognizer.prototype.recognize = function (context, cb) {
         var result = { score: 0.0, answers: null, intent: null };
-        if (context && context.message && context.message.text && !contect.message.echo) {
+        if (context && context.message && context.message.text && !context.message.echo) {
             var utterance = context.message.text;
             QnAMakerRecognizer.recognize(utterance, this.kbUri, this.ocpApimSubscriptionKey, this.top, this.intentName, function (error, result) {
                 if (!error) {
