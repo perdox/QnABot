@@ -25,6 +25,17 @@ var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure
     openIdMetadata: process.env['BotOpenIdMetadata']
 });
 
+if (useEmulator) {
+    var restify = require('restify');
+    var server = restify.createServer();
+    server.listen(3978, function() {
+        console.log('test bot endpont at http://localhost:3978/api/messages');
+    });
+    server.post('/api/messages', connector.listen());
+} else {
+    module.exports = { default: connector.listen() }
+}
+
 var request = require("request");
 var entities = require("html-entities");
 var qnaMakerServiceEndpoint = 'https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases/';
@@ -136,7 +147,12 @@ var QnAMakerTools = (function () {
                     var filteredResult = qnaMakerResult.answers.filter(function (qna) { return qna.questions[0] === results.response.entity; });
                     if (filteredResult !== null && filteredResult.length > 0) {
                         var selectedQnA = filteredResult[0];
-                        session.send(selectedQnA.answer);
+                        
+                        var m = session.MakeMessage();
+                        m.text = selectedQnA.answer;
+                        m.speech = selectedQnA.answer;
+
+                        session.send(m);
                         session.endDialogWithResult(selectedQnA);
                     }
                 }
@@ -298,13 +314,4 @@ var basicQnAMakerDialog = new QnAMakerDialog({
 
 bot.dialog('/', basicQnAMakerDialog);
 
-if (useEmulator) {
-    var restify = require('restify');
-    var server = restify.createServer();
-    server.listen(3978, function() {
-        console.log('test bot endpont at http://localhost:3978/api/messages');
-    });
-    server.post('/api/messages', connector.listen());
-} else {
-    module.exports = { default: connector.listen() }
-}
+
